@@ -142,3 +142,89 @@ pip install -r requirements/local.txt
     For production use install requirements/production.txt.
 
 python manage.py migrate
+This step gave error saying that no password passed.
+So the configuration file base.py has been changed :
+DATABASES = {
+    # Raises ImproperlyConfigured Exception
+    # if DATABASE_URL Not in os.environ and
+    # the "default" argument is not defined.
+    # The DATABASE_URL environment variables
+    # expect a value in the following format:
+    # DATABASE_URL=postgres://user:password@hostname_or_ip:port/database_name
+    #"default": env.db(
+    #    "DATABASE_URL",
+    #    default="postgres:///everycheese",       
+    #)
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'everycheese',
+        'USER': 'postgres',
+        'PASSWORD': 'dspaceworldPassword for postgres user',
+        'HOST': 'localhost',
+        'PORT': '5432',
+    }
+}
+python manage.py runserver
+Open a web browser to 127.0.0.1:800018. 
+I could see a barebones EveryCheese website running. 
+
+Git repository everycheese is opened.
+From insed everycheese directory ran:
+git init
+(everycheese) F:\django-crash-course\everycheese>git remote add origin https://github.com/jogiraju/everycheese.git
+
+(everycheese) F:\django-crash-course\everycheese>git add .
+
+(everycheese) F:\django-crash-course\everycheese>git commit -m "Boilerplate files generated from the `django-crash-starter` project template"
+[master (root-commit) e066d58] Boilerplate files generated from the `django-crash-starter` project template
+ 86 files changed, 3424 insertions
+(everycheese) F:\django-crash-course\everycheese>git push -u origin master
+Fatal: HttpRequestException encountered.
+Username for 'https://github.com': jogiraju
+Password for 'https://jogiraju@github.com':
+Counting objects: 102, done.
+(everycheese) F:\django-crash-course\everycheese>git log
+commit e066d58af321e2d89f7c3f5fa9d60f91314aa133
+Author: jogiraju <rajujogi.t@gmail.com>
+Date:   Fri Apr 9 17:17:40 2021 +0530
+
+    Boilerplate files generated from the `django-crash-starter` project template
+
+python manage.py runserver
+
+Go to http://127.0.0.1:8000 to see the starter EveryCheese website. Click on the “Sign Up” link in the navbar. 
+Enter these values:
+• email: cheesehead@example.com
+• username: cheesehead 
+• password: *QjkXCPUm8iuaeP
+ 
+We’re not going to get an email confirmation by regular email. django-crash-starter isn’t set up to send out real emails during local development, and for good reason. We wouldn’t want to accidentally send out emails to real people during local development. However, django-crash-starter has configured our project to display all outgoing emails in the console, where runserver is running. 
+
+views.py
+class UserDetailView(LoginRequiredMixin, DetailView):
+    model = User
+    # These Next Two Lines Tell the View to Index
+    #   Lookups by Username
+    slug_field = "username"
+    slug_url_kwarg = "username"
+This is update view part of My Info when the user logs in http://localhost:8000.
+Some things to notice:
+• UserDetailView is a subclass of Django’s generic DetailView. • The view can only be accessed by logged-in users because of LoginRequiredMixin. • We have to explicitly specify the model with model = User. • Note the URL /users/cheesehead/ and how username is used as a slug in the URL.
+
+<a class="btn btn-primary" href="{% url 'users:update' %}"> My Info</a> 
+<a class="btn btn-primary" href="{% url 'account_email' %}"> E-Mail</a>
+Both buttons are actually just HTML links that are styled to look like buttons. The url tag is a built-in template tag that converts a URL name to an absolute path URL. 
+
+The My Info button points to a URL named update within the users namespace, which is wired up with UserUpdateView in the users/urls.py module. 
+
+The E-Mail button link points to a URL named account_email. That URL is defined in allauth’s urls.py file, which we can find at https://github.com/pennersr/django-allauth/blob/master/allauth/ account/urls.py.
+
+django-crash-starter came with django-allauth pre-configured with its users app. Since it’s a dependency of the everycheese project that we generated, links in users app templates can go to URLs defined by allauth.
+
+Add this to the User model in the users app models.py:
+bio = models.TextField("Bio", blank=True)
+
+We can put that line right below the name field.
+Then make and apply our migrations as usual:
+python manage.py makemigrations users python manage.py migrate users
+
